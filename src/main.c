@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+// Saves the original tal in a buffer
 void saveTal(char *tal, char *buffTal)
 {
     for (int i = 0, j = 0; i <= strlen(tal); i++)
@@ -9,8 +10,8 @@ void saveTal(char *tal, char *buffTal)
         buffTal[i] = tal[i];
     }
 }
-
-void setEndOfWord(char *buffTal, char *specialCharacters, int idx, char *end)
+// Sets the end of the word
+void setEndOfWord(char *buffTal, int idx, char *end)
 {
     for (int i = idx, j = 0; i <= strlen(buffTal); i++)
     {
@@ -26,45 +27,53 @@ void setEndOfWord(char *buffTal, char *specialCharacters, int idx, char *end)
     }
 }
 
-void decrypt(char *tal, char *vokabulär[])
+// Decodes the tal
+void decode(char *tal, char *vokabulär[])
 {
     int idx = 0;
     char *buffTal = (char *)calloc(strlen(tal), sizeof(char));
 
     saveTal(tal, buffTal);
 
-    char *specialCharacters = strtok(tal, " ?!,.");
+    char *encodedWord = strtok(tal, " ?!,.");
 
-    while (specialCharacters != NULL)
+    while (encodedWord != NULL)
     {
-        idx += strlen(specialCharacters);
         char *end = (char *)calloc(strlen(buffTal), sizeof(char));
+        char *decodedWord = (char *)calloc(strlen(encodedWord), sizeof(char));
+        idx += strlen(encodedWord);
         int i = 0;
+
+        // Checks if the word is in the vokabulär
         while (vokabulär[i] != NULL)
         {
-            if (strlen(specialCharacters) == strlen(vokabulär[i]))
+            if (strlen(encodedWord) == strlen(vokabulär[i]))
             {
-                int matchning = 1;
-                for (int j = 0; j < strlen(specialCharacters); j++)
+                int match = 1;
+                for (int j = 0; j < strlen(encodedWord); j++)
                 {
-                    if (specialCharacters[j] != '*' && specialCharacters[j] != vokabulär[i][j])
+                    if (encodedWord[j] != '*' && encodedWord[j] != vokabulär[i][j])
                     {
-                        matchning = 0;
+                        match = 0;
                         break;
                     }
                 }
-                if (matchning)
+                if (match)
                 {
-                    strcpy(specialCharacters, vokabulär[i]);
+                    // Sets the word to the decoded word
+                    strcpy(decodedWord, vokabulär[i]);
                     break;
                 }
             }
             i++;
         }
-        setEndOfWord(buffTal, specialCharacters, idx, end);
-        printf("%s%s", specialCharacters, end);
-        specialCharacters = strtok(NULL, " ?!,.");
+        setEndOfWord(buffTal, idx, end);
+        printf("%s%s", decodedWord, end);
+        encodedWord = strtok(NULL, " ?!,.");
+        free(decodedWord);
+        free(end);
     }
+    free(buffTal);
 }
 
 int main()
@@ -74,7 +83,7 @@ int main()
     // char tal[] = "b**l, w*ak!";
     // char *vokabulär[] = {"cell", "bell", "week", "weak"};
 
-    decrypt(tal, vokabulär);
+    decode(tal, vokabulär);
 
     return 0;
 }
